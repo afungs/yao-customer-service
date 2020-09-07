@@ -1,17 +1,22 @@
 package xyz.anfun.customer_service.service.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.BoundHashOperations;
+import org.springframework.data.redis.core.RedisTemplate;
 import xyz.anfun.customer_service.repository.UserRepository;
 import xyz.anfun.customer_service.service.UserService;
 import xyz.anfun.customer_service.entity.User;
 
-import java.util.List;
+import java.util.*;
 
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.*;
 
-import java.util.Optional;
-
 import org.springframework.stereotype.Service;
+import xyz.anfun.customer_service.util.JSONUtils;
+import xyz.anfun.customer_service.util.PropertiesUtils;
 
 import javax.annotation.Resource;
 
@@ -24,11 +29,15 @@ public class UserServiceImpl implements UserService {
     @Resource
     private UserRepository rep;
 
+    @Autowired
+    private PropertiesUtils propertiesUtils;
+
+    @Autowired
+    private RedisTemplate<String, String> redisTemplate;
 
     public User save(User obj) {
         return rep.save(obj);
     }
-
 
     @Transactional
     public List<User> saveAll(Iterable<User> list) {
@@ -122,5 +131,26 @@ public class UserServiceImpl implements UserService {
     @Override
     public User findByUserName(String userName) {
         return rep.findByUserName(userName);
+    }
+
+    @Override
+    public List<User> findUsersByCustomerServiceUserName(String customerServiceUserName) {
+        BoundHashOperations<String, String, Object> rcs = redisTemplate.boundHashOps(propertiesUtils.getRedisCustomerServicesKey());
+        Map<String, ArrayList<String>> data = null;
+        try {
+            data = JSONUtils.jsonToObject((String) rcs.get(customerServiceUserName), new TypeReference<HashMap<String, ArrayList<String>>>() {});
+            List<User> users = new ArrayList<>();
+            data.get("visitors").forEach(v -> {
+                User user = rep.findByUserName(v);
+                if (user != null){
+                    users.add(user);
+                }
+            });
+            return users;
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+
+        return null;
     }
 }

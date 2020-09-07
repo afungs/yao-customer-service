@@ -16,5 +16,6 @@ import java.util.Optional;
 public interface UserService extends BaseService<User, Long>  {
     public User findByUserName(String userName);
 
-
+    // 通过客服用户名查找所有用户
+    List<User> findUsersByCustomerServiceUserName(String customerServiceUserName);
 }

@@ -17,15 +17,15 @@ import org.springframework.data.redis.core.BoundHashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.util.StringUtils;
 import xyz.anfun.customer_service.entity.CustomerService;
+import xyz.anfun.customer_service.entity.User;
 import xyz.anfun.customer_service.netty.ChannelHandlerPool;
 import xyz.anfun.customer_service.netty.model.ChatMessage;
+import xyz.anfun.customer_service.netty.model.MessageType;
 import xyz.anfun.customer_service.service.CustomerServiceService;
+import xyz.anfun.customer_service.service.UserService;
 import xyz.anfun.customer_service.util.*;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 public class NettyHandler extends SimpleChannelInboundHandler<TextWebSocketFrame> {//TextWebSocketFrame是netty用于处理websocket发来的文本对象
@@ -39,12 +39,14 @@ public class NettyHandler extends SimpleChannelInboundHandler<TextWebSocketFrame
     private static RedisTemplate<String, String> redisTemplate;
     private static PropertiesUtils propertiesUtils;
     private static CustomerServiceService customerServiceService;
+    private static UserService userService;
     private CryptUtils cryptUtils;
 
     static {
         redisTemplate = SpringContextUtil.getBean("stringRedisTemplate");
         propertiesUtils = SpringContextUtil.getBean("propertiesUtils");
         customerServiceService = SpringContextUtil.getBean("customerServiceServiceImpl");
+        userService = SpringContextUtil.getBean("userServiceImpl");
     }
 
     //接收到客户都发送的消息
@@ -146,6 +148,15 @@ public class NettyHandler extends SimpleChannelInboundHandler<TextWebSocketFrame
                 CustomerService cs = customerServiceService.assign(username);
                 sendMessage(ctx, new ChatMessage(cs, username));
                 break;
+            case MESSAGE_LIST:
+                if (role.equals("CUSTOMER_SERVICE")){
+                    List<User> users = userService.findUsersByCustomerServiceUserName(username);
+                    try {
+                        sendMessage(ctx, new ChatMessage(MessageType.MESSAGE_LIST, JSONUtils.objectToString(users), "system", null));
+                    } catch (JsonProcessingException e) {
+                        e.printStackTrace();
+                    }
+                }
         }
     }
 

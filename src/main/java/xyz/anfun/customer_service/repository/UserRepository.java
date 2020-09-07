@@ -9,6 +9,8 @@ import org.springframework.transaction.annotation.Transactional;
 import xyz.anfun.customer_service.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
+
 /**
 @author afungs
 */
