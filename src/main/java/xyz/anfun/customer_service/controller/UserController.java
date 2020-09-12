@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import xyz.anfun.customer_service.service.UserService;
 import xyz.anfun.customer_service.util.JSONUtils;
+import xyz.anfun.customer_service.util.Response;
 
 @RestController
 @RequestMapping("/user")
@@ -17,8 +18,11 @@ public class UserController {
     UserService userService;
 
     @GetMapping("/me")
-    public String me(Authentication authentication) throws JsonProcessingException {
-        return JSONUtils.objectToString(userService.findByUserName((String) authentication.getPrincipal()));
+    public Response me(Authentication authentication) throws JsonProcessingException {
+        Response response = new Response();
+        response.setStatus(200);
+        response.setData(userService.findByUserName((String) authentication.getPrincipal()));
+        return response;
     }
 
 }

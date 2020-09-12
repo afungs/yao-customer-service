@@ -127,7 +127,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<TextWebSocketFrame
         if (chatMessage == null){
             return;
         }
-
+        System.out.println(chatMessage.getType());
         switch (chatMessage.getType()){
             case CHAT:
                 if (role.equals("CUSTOMER_SERVICE") && !StringUtils.isEmpty(chatMessage.getTo())){
@@ -142,17 +142,17 @@ public class NettyHandler extends SimpleChannelInboundHandler<TextWebSocketFrame
                 break;
             case CONNECTION:
                 if (role.equals("CUSTOMER_SERVICE")){
-                    sendMessage(ctx, new ChatMessage("客服无法进行分配", "system"));
+                    sendMessage(ctx, new ChatMessage("客服无法进行分配", null));
                     return;
                 }
                 CustomerService cs = customerServiceService.assign(username);
-                sendMessage(ctx, new ChatMessage(cs, username));
+                sendMessage(ctx, new ChatMessage(MessageType.CONNECTION,cs, null, null));
                 break;
             case MESSAGE_LIST:
                 if (role.equals("CUSTOMER_SERVICE")){
                     List<User> users = userService.findUsersByCustomerServiceUserName(username);
                     try {
-                        sendMessage(ctx, new ChatMessage(MessageType.MESSAGE_LIST, JSONUtils.objectToString(users), "system", null));
+                        sendMessage(ctx, new ChatMessage(MessageType.MESSAGE_LIST, JSONUtils.objectToString(users), null, null));
                     } catch (JsonProcessingException e) {
                         e.printStackTrace();
                     }

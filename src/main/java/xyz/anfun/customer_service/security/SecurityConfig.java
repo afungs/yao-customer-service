@@ -54,6 +54,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .cors()
                 .and()
                 .authorizeRequests()
+                .antMatchers(HttpMethod.OPTIONS, "/**")
+                    .permitAll()
                 .anyRequest().permitAll()
                 .and()
                 .formLogin()
@@ -82,10 +84,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 //    @Bean
 //    CorsConfigurationSource corsConfigurationSource() {
 //        CorsConfiguration configuration = new CorsConfiguration();
-//        configuration.setAllowedOrigins(Arrays.asList("*", "http://192.168.3.12:10086", "http://192.168.3.12:10087"));
+//        configuration.setAllowedOrigins(Arrays.asList("*"));
 //        configuration.setAllowedMethods(Arrays.asList("PUT", "POST", "GET", "OPTIONS", "DELETE"));
 //        configuration.setAllowCredentials(true);
-//        configuration.setMaxAge(3600L);
 //        configuration.setAllowedHeaders(Arrays.asList("Authorization"));
 //        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 //        source.registerCorsConfiguration("/**", configuration);
